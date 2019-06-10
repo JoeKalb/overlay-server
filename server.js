@@ -9,15 +9,21 @@ const port = 8001;
 
 app.io = io;
 
+const namespaces = {}
+
 app.get('/', (req, res) => res.json({response:'Hello get!'}))
 
 app.post('/', (req, res) => res.json({response:'Hello post!'}))
 
 app.post('/trivia/question', (req,res) => {
     try{
+        let channel = req.body.channel
         console.log(req.body)
-        app.io.emit('question', req.body)
-        res.status(200).json(`Trivia Received\nChannel: ${req.body.channel}`)
+        if(!namespaces.hasOwnProperty(channel)){
+            namespaces[channel] = io.of(`/${channel}`)
+        }
+        namespaces[channel].emit('question', req.body)
+        res.status(200).json(`Trivia Received\nChannel: ${channel}`)
     }
     catch(err){
         console.log(err)
