@@ -15,6 +15,23 @@ app.get('/', (req, res) => res.json({response:'Hello get!'}))
 
 app.post('/', (req, res) => res.json({response:'Hello post!'}))
 
+app.post('/trivia', (req, res) => {
+    try{
+        let channel = req.body.channel;
+        if(!namespaces.hasOwnProperty(channel))
+            namespaces[channel] = io.of(`/${channel}`)
+
+        namespaces[channel].emit('triviaStart', req.body)
+        res.status(200).json({
+            'info':req.body
+        })
+    }
+    catch(err){
+        console.log(err)
+        res.status(404).json({"Error":err})
+    }
+})
+
 app.post('/trivia/question', (req,res) => {
     try{
         let channel = req.body.channel
@@ -22,7 +39,7 @@ app.post('/trivia/question', (req,res) => {
         if(!namespaces.hasOwnProperty(channel)){
             namespaces[channel] = io.of(`/${channel}`)
         }
-        namespaces[channel].emit('question', req.body)
+        namespaces[channel].emit('triviaQuestion', req.body)
         res.status(200).json(`Trivia Received\nChannel: ${channel}`)
     }
     catch(err){
