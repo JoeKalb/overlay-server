@@ -17,10 +17,10 @@ app.post('/', (req, res) => res.json({response:'Hello post!'}))
 
 app.get('/game/:channel', (req, res) => {
     if(namespaces.hasOwnProperty(req.params.channel)){
-        res.status(200).json({'game':namespaces[req.params.channel]})
+        res.status(200).json({'game':namespaces[req.params.channel].game})
     }
     else
-        res.status(404).json({response:'No Game Currently Found'})
+        res.status(404).json({response:`No game found in channel: ${req.params.channel}`})
 })
 
 app.post('/trivia', (req, res) => {
