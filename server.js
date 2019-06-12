@@ -15,14 +15,29 @@ app.get('/', (req, res) => res.json({response:'Hello get!'}))
 
 app.post('/', (req, res) => res.json({response:'Hello post!'}))
 
+app.get('/game/:channel', (req, res) => {
+    if(namespaces.hasOwnProperty(req.params.channel)){
+        res.status(200).json({'game':namespaces[req.params.channel]})
+    }
+    else
+        res.status(404).json({response:'No Game Currently Found'})
+})
+
 app.post('/trivia', (req, res) => {
     console.log('trivia start')
     try{
         let channel = req.body.channel;
-        if(!namespaces.hasOwnProperty(channel))
-            namespaces[channel] = io.of(`/${channel}`)
+        if(!namespaces.hasOwnProperty(channel)){
+            namespaces[channel] = {
+                'socket':io.of(`/${channel}`),
+                'game':{
+                    'type':'trivia',
+                    'question':''
+                }
+            }
+        }
 
-        namespaces[channel].emit('triviaStart', req.body)
+        namespaces[channel].socket.emit('triviaStart', req.body)
         res.status(200).json({
             'info':req.body
         })
@@ -35,12 +50,22 @@ app.post('/trivia', (req, res) => {
 
 app.post('/trivia/question', (req,res) => {
     try{
-        let channel = req.body.channel
+        const { channel, question } = req.body.channel
         console.log(req.body)
         if(!namespaces.hasOwnProperty(channel)){
-            namespaces[channel] = io.of(`/${channel}`)
+            namespaces[channel] = {
+                'socket':io.of(`/${channel}`),
+                'game':{
+                    'type':'trivia',
+                    'question':question
+                }
+            }
         }
-        namespaces[channel].emit('triviaQuestion', req.body)
+        else{
+            namespaces[channel].game.question = question
+        }
+
+        namespaces[channel].socket.emit('triviaQuestion', question)
         res.status(200).json(`Trivia Received\nChannel: ${channel}`)
     }
     catch(err){
