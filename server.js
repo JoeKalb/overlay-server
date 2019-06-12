@@ -16,6 +16,7 @@ app.get('/', (req, res) => res.json({response:'Hello get!'}))
 app.post('/', (req, res) => res.json({response:'Hello post!'}))
 
 app.post('/trivia', (req, res) => {
+    console.log('trivia start')
     try{
         let channel = req.body.channel;
         if(!namespaces.hasOwnProperty(channel))
