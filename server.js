@@ -9,7 +9,7 @@ const port = 8001;
 
 app.io = io;
 
-const namespaces = {}
+let namespaces = {}
 
 app.get('/', (req, res) => res.json({response:'Hello get!'}))
 
@@ -32,12 +32,13 @@ app.post('/trivia', (req, res) => {
                 'socket':io.of(`/${channel}`),
                 'game':{
                     'type':'trivia',
+                    'category':req.body.category,
                     'question':''
                 }
             }
         }
 
-        namespaces[channel].socket.emit('triviaStart', req.body)
+        namespaces[channel].socket.emit('triviaStart', namespaces[channel].game)
         res.status(200).json({
             'info':req.body
         })
@@ -50,7 +51,7 @@ app.post('/trivia', (req, res) => {
 
 app.post('/trivia/question', (req,res) => {
     try{
-        const { channel, question } = req.body.channel
+        const { channel, question } = req.body
         console.log(req.body)
         if(!namespaces.hasOwnProperty(channel)){
             namespaces[channel] = {
