@@ -16,11 +16,18 @@ app.get('/', (req, res) => res.json({response:'Hello get!'}))
 app.post('/', (req, res) => res.json({response:'Hello post!'}))
 
 app.get('/game/:channel', (req, res) => {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+
     if(namespaces.hasOwnProperty(req.params.channel)){
         res.status(200).json({'game':namespaces[req.params.channel].game})
     }
-    else
+    else{
+        namespaces[req.params.channel] = {
+            'socket':io.of(`/${req.params.channel}`)
+        }
         res.status(404).json({response:`No game found in channel: ${req.params.channel}`})
+    }
 })
 
 app.post('/trivia', (req, res) => {
@@ -31,10 +38,17 @@ app.post('/trivia', (req, res) => {
             namespaces[channel] = {
                 'socket':io.of(`/${channel}`),
                 'game':{
-                    'type':'trivia',
+                    'type':'Trivia',
                     'category':req.body.category,
                     'question':''
                 }
+            }
+        }
+        else{
+            namespaces[channel].game = {
+                'type':'Trivia',
+                'category':req.body.category,
+                'question':''
             }
         }
 
@@ -57,7 +71,7 @@ app.post('/trivia/question', (req,res) => {
             namespaces[channel] = {
                 'socket':io.of(`/${channel}`),
                 'game':{
-                    'type':'trivia',
+                    'type':'Trivia',
                     'question':question
                 }
             }
