@@ -19,27 +19,28 @@ app.get('/game/:channel', (req, res) => {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
 
-    if(namespaces.hasOwnProperty(req.params.channel)){
-        res.status(200).json({'game':namespaces[req.params.channel].game})
+    const { channel } = req.params
+    if(namespaces.hasOwnProperty(channel)){
+        res.status(200).json({'game':namespaces[channel].game})
     }
     else{
-        namespaces[req.params.channel] = {
-            'socket':io.of(`/${req.params.channel}`)
+        namespaces[channel] = {
+            'socket':io.of(`/${channel}`)
         }
-        res.status(404).json({response:`No game found in channel: ${req.params.channel}`})
+        res.status(404).json({response:`No game found in channel: ${channel}`})
     }
 })
 
 app.post('/trivia', (req, res) => {
     console.log('trivia start')
     try{
-        let channel = req.body.channel;
+        const { category, channel } = req.body;
         if(!namespaces.hasOwnProperty(channel)){
             namespaces[channel] = {
                 'socket':io.of(`/${channel}`),
                 'game':{
                     'type':'Trivia',
-                    'category':req.body.category,
+                    'category':category,
                     'question':''
                 }
             }
@@ -47,7 +48,7 @@ app.post('/trivia', (req, res) => {
         else{
             namespaces[channel].game = {
                 'type':'Trivia',
-                'category':req.body.category,
+                'category':category,
                 'question':''
             }
         }
